@@ -31,7 +31,9 @@ import hudson.model.StatusIcon;
 import hudson.model.StockStatusIcon;
 import jenkins.util.NonLocalizable;
 import org.junit.Assert;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -44,13 +46,14 @@ import java.util.List;
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class IconTest extends HudsonTestCase  {
+public class IconTest {
 
-    // Tried using JenkinsRule etc in this test but there must be some magic
-    // that I missed... I was getting 404s and other errors.
+	@Rule
+	public JenkinsRule j = new JenkinsRule();
 
+	@Test
     public void testIcons() throws Exception {
-        HtmlPage p = createWebClient().goTo("self/01_testIcons");
+        HtmlPage p = j.createWebClient().goTo("self/01_testIcons");
         HtmlElement iconsBlock = p.getElementById("iconsBlock");
         List<HtmlElement> icons = Lists.newArrayList(iconsBlock.getChildElements());
 
@@ -64,8 +67,9 @@ public class IconTest extends HudsonTestCase  {
         assertIconToImageOkay(icons.get(5), "/images/24x24/aborted.png");
     }
 
+	@Test
     public void testBallColorTd() throws Exception {
-        HtmlPage p = createWebClient().goTo("self/02_testBallColorTd");
+        HtmlPage p = j.createWebClient().goTo("self/02_testBallColorTd");
 
         HtmlElement ballColorAborted = p.getElementById("ballColorAborted");
         List<HtmlElement> ballIcons = Lists.newArrayList(ballColorAborted.getChildElements());
@@ -78,8 +82,9 @@ public class IconTest extends HudsonTestCase  {
         assertIconToImageOkay(statusIconsList.get(1), "/plugin/12345/icons/s2.png");
     }
 
+	@Test
     public void testTasks() throws Exception {
-        HtmlPage p = createWebClient().goTo("self/03_testTask");
+        HtmlPage p = j.createWebClient().goTo("self/03_testTask");
 
         HtmlElement tasksDiv = p.getElementById("tasks");
         List<HtmlElement> taskDivs = Lists.newArrayList(tasksDiv.getChildElements());
