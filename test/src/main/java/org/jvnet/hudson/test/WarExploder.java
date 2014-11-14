@@ -87,7 +87,6 @@ final class WarExploder {
             throw new AssertionError("jenkins.war is not in the classpath. If you are running this from the core workspace, run 'mvn install' to create the war image in war/target/jenkins");
         File war = Which.jarFile(Class.forName("executable.Executable"));
 
-        // TODO this assumes that the CWD of the Maven process is the plugin ${basedir}, which may not be the case
         File explodeDir = new File("./target/jenkins-for-test").getAbsoluteFile();
         while (new File(explodeDir + ".exploding").isFile()) {
             explodeDir = new File(explodeDir + "x");
@@ -96,8 +95,12 @@ final class WarExploder {
 
         if(!timestamp.exists() || (timestamp.lastModified()!=war.lastModified())) {
             System.out.println("Exploding " + war + " into " + explodeDir);
-            new FileOutputStream(explodeDir + ".exploding").close();
-            new FilePath(explodeDir).deleteRecursive();
+			if (new File(explodeDir + ".exploding").exists()){
+				new FilePath(explodeDir).deleteRecursive();
+			}
+			if (!explodeDir.exists()) {
+				explodeDir.mkdirs();
+			}
             new FilePath(war).unzip(new FilePath(explodeDir));
             if(!explodeDir.exists())    // this is supposed to be impossible, but I'm investigating HUDSON-2605
                 throw new IOException("Failed to explode "+war);
