@@ -727,7 +727,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * HTTP proxy configuration.
      */
-    public transient volatile ProxyConfiguration proxy;
+    public transient volatile @CheckForNull ProxyConfiguration proxy;
 
     /**
      * Bound to "/log".
