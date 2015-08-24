@@ -41,6 +41,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -52,6 +53,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import org.apache.commons.io.FileSystemUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.Project;
@@ -659,4 +662,35 @@ public class FilePathTest {
             // test conflict subdir
             src.moveAllChildrenTo(dst);
     }
+
+    @Issue("JENKINS-JENKINS-10629")
+    @Test
+    public void testEOFbrokenFlush() throws IOException, InterruptedException {
+        final File srcFolder = temp.newFolder("src");
+        // simulate magic structure with magic sizes:
+        // |- dir/pom.xml   (2049)
+        // |- pom.xml       (2049)
+        // \- small.tar     (1536)
+        final File smallTar = new File(srcFolder, "small.tar");
+        givenSomeContentInFile(smallTar, 1536);
+        final File dir = new File(srcFolder, "dir");
+        dir.mkdirs();
+        final File pomFile = new File(dir, "pom.xml");
+        givenSomeContentInFile(pomFile, 2049);
+        FileUtils.copyFileToDirectory(pomFile, srcFolder);
+
+        final File archive = temp.newFile("archive.tar");
+
+        // Compress archive
+        final FilePath tmpDirPath = new FilePath(srcFolder);
+        int tarred = tmpDirPath.tar(new FileOutputStream(archive), "**");
+        assertEquals("One file should have been compressed", 3, tarred);
+
+        // Decompress
+        final File dstFolder = temp.newFolder("dst");
+        dstFolder.mkdirs();
+        FilePath outDir = new FilePath(dstFolder);
+        tmpDirPath.child("../" + archive.getName()).untar(outDir, TarCompression.NONE);
+    }
+
 }
