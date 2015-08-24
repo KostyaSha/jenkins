@@ -289,13 +289,13 @@ public class ArtifactArchiverTest {
         final File ws = temporaryFolder.newFolder("workspace");
 
         final RandomAccessFile smallTar = new RandomAccessFile(ws.getAbsolutePath() + "/small.tar", "rw");
-        smallTar.setLength(8192*1024+1536);
+        smallTar.setLength(1536);
         smallTar.close();
         final File dir = new File(ws, "dir");
         dir.mkdirs();
         final File pomFile = new File(dir.getAbsolutePath() + "/pom.xml");
         final RandomAccessFile pomRFile = new RandomAccessFile(pomFile.getAbsolutePath(), "rw");
-        pomRFile.setLength(8192+2049);
+        pomRFile.setLength(2049);
         pomRFile.close();
 
         FileUtils.copyFileToDirectory(pomFile, ws);
@@ -303,6 +303,74 @@ public class ArtifactArchiverTest {
         final FreeStyleProject project = j.createFreeStyleProject("project");
         project.setCustomWorkspace(ws.getAbsolutePath());
         project.setAssignedLabel(label);
+        Publisher artifactArchiver = new ArtifactArchiver("**");
+        project.getPublishersList().add(artifactArchiver);
+
+        project.scheduleBuild2(0);
+        j.waitUntilNoActivity();
+        project.scheduleBuild2(0);
+        j.waitUntilNoActivity();
+        project.scheduleBuild2(0);
+        j.waitUntilNoActivity();
+        project.scheduleBuild2(0);
+        j.waitUntilNoActivity();
+        project.scheduleBuild2(0);
+        j.waitUntilNoActivity();
+        project.scheduleBuild2(0);
+        j.waitUntilNoActivity();
+        project.scheduleBuild2(0);
+        j.waitUntilNoActivity();
+        project.scheduleBuild2(0);
+        j.waitUntilNoActivity();
+
+        final FreeStyleBuild build = project.getBuildByNumber(1);
+        final File artifactsDir = build.getArtifactsDir();
+
+        temporaryFolder.delete();
+    }
+
+    @Test
+    public void testSome2() throws Exception {
+        final LabelAtom label = new LabelAtom("slave");
+        j.createOnlineSlave(label);
+
+        final TemporaryFolder temporaryFolder = new TemporaryFolder();
+        temporaryFolder.create();
+        final File ws = temporaryFolder.newFolder("workspace");
+
+        final FreeStyleProject project = j.createFreeStyleProject("project");
+//        project.setCustomWorkspace(ws.getAbsolutePath());
+        project.setAssignedLabel(label);
+        final Shell shell = new Shell("#!/bin/bash\n" +
+                "# Shell execution:\n" +
+                "rm -rf ${WORKSPACE}/*\n" +
+                "\n" +
+                "function generateFile {\n" +
+                " size=$1\n" +
+                " file=$2\n" +
+                "\n" +
+                " dd if=/dev/zero of=$file bs=1 count=$size\n" +
+                "}\n" +
+                "\n" +
+                "generateFile 1537 small.tar\n" +
+                "# 1537 broke\n" +
+                "# 1536 not 3x512?\n" +
+                "\n" +
+                "[ -f dir ] || mkdir dir\n" +
+                "cd dir\n" +
+                "\n" +
+                "generateFile 2049 pom.xml\n" +
+                "\n" +
+                "du pom.xml\n" +
+                "stat pom.xml\n" +
+                "#broke:\n" +
+                "# Size: 2049\n" +
+                "#didn't broke:\n" +
+                "# Size: 2048      \tBlocks: 8          IO Block: 4096   regular file\n" +
+                "# DEFAULT_BUFFER_SIZE ?\n" +
+                "\n" +
+                "cp pom.xml ../pom.xml\n");
+        project.getBuildersList().add(shell);
         Publisher artifactArchiver = new ArtifactArchiver("**");
         project.getPublishersList().add(artifactArchiver);
 
