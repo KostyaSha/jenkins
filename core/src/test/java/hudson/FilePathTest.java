@@ -663,7 +663,7 @@ public class FilePathTest {
             src.moveAllChildrenTo(dst);
     }
 
-    @Issue("JENKINS-JENKINS-10629")
+    @Issue("JENKINS-10629")
     @Test
     public void testEOFbrokenFlush() throws IOException, InterruptedException {
         final File srcFolder = temp.newFolder("src");

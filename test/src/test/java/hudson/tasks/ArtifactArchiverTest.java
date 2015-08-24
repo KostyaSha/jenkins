@@ -27,24 +27,26 @@ package hudson.tasks;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.BuildListener;
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.model.Result;
+import hudson.model.*;
+
 import static hudson.tasks.LogRotatorTest.build;
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.util.Collections;
 import java.util.List;
+
+import hudson.model.labels.LabelAtom;
+import hudson.slaves.DumbSlave;
 import jenkins.util.VirtualFile;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
@@ -276,6 +278,41 @@ public class ArtifactArchiverTest {
         Fingerprinter.FingerprintAction a = b1.getAction(Fingerprinter.FingerprintAction.class);
         assertNotNull(a);
         assertEquals("[stuff]", a.getFingerprints().keySet().toString());
+    }
+
+    @Test
+    public void testSome() throws Exception {
+        final LabelAtom label = new LabelAtom("slave");
+        j.createOnlineSlave(label);
+        final TemporaryFolder temporaryFolder = new TemporaryFolder();
+        temporaryFolder.create();
+        final File ws = temporaryFolder.newFolder("workspace");
+
+        final RandomAccessFile smallTar = new RandomAccessFile(ws.getAbsolutePath() + "/small.tar", "rw");
+        smallTar.setLength(8192*1024+1536);
+        smallTar.close();
+        final File dir = new File(ws, "dir");
+        dir.mkdirs();
+        final File pomFile = new File(dir.getAbsolutePath() + "/pom.xml");
+        final RandomAccessFile pomRFile = new RandomAccessFile(pomFile.getAbsolutePath(), "rw");
+        pomRFile.setLength(8192+2049);
+        pomRFile.close();
+
+        FileUtils.copyFileToDirectory(pomFile, ws);
+
+        final FreeStyleProject project = j.createFreeStyleProject("project");
+        project.setCustomWorkspace(ws.getAbsolutePath());
+        project.setAssignedLabel(label);
+        Publisher artifactArchiver = new ArtifactArchiver("**");
+        project.getPublishersList().add(artifactArchiver);
+
+        project.scheduleBuild2(0);
+        j.waitUntilNoActivity();
+
+        final FreeStyleBuild build = project.getBuildByNumber(1);
+        final File artifactsDir = build.getArtifactsDir();
+
+        temporaryFolder.delete();
     }
 
 }
