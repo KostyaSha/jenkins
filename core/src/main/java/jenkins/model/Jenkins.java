@@ -501,7 +501,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Active {@link Cloud}s.
+     *
+     * @since FIXME
+     * @deprecated use {@link #getClouds()} instead
      */
+    @Deprecated
     public final Hudson.CloudList clouds = new Hudson.CloudList(this);
 
     public static class CloudList extends DescribableList<Cloud,Descriptor<Cloud>> {
@@ -1950,10 +1954,18 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
+     *
+     * @return list of
+     */
+    public Hudson.CloudList getClouds() {
+        return clouds;
+    }
+
+    /**
      * Gets a {@link Cloud} by {@link Cloud#name its name}, or null.
      */
     public Cloud getCloud(String name) {
-        return clouds.getByName(name);
+        return getClouds().getByName(name);
     }
 
     protected Map<Node,Computer> getComputerMap() {
@@ -2941,7 +2953,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     nodes.load();
                 }
 
-                clouds.setOwner(Jenkins.this);
+                getClouds().setOwner(Jenkins.this);
             }
         });
 

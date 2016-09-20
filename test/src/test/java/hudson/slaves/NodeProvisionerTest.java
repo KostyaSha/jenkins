@@ -180,7 +180,7 @@ public class NodeProvisionerTest {
     private DummyCloudImpl initHudson(int delay) throws IOException {
         // start a dummy service
         DummyCloudImpl cloud = new DummyCloudImpl(r, delay);
-        r.jenkins.clouds.add(cloud);
+        r.jenkins.getClouds().add(cloud);
 
         // no build on the master, to make sure we get everything from the cloud
         r.jenkins.setNumExecutors(0);

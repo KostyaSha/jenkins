@@ -396,7 +396,7 @@ public class QueueTest {
     @Test public void flyweightTasksWithoutMasterExecutors() throws Exception {
         DummyCloudImpl cloud = new DummyCloudImpl(r, 0);
         cloud.label = r.jenkins.getLabel("remote");
-        r.jenkins.clouds.add(cloud);
+        r.jenkins.getClouds().add(cloud);
         r.jenkins.setNumExecutors(0);
         r.jenkins.setNodes(Collections.<Node>emptyList());
         MatrixProject m = r.jenkins.createProject(MatrixProject.class, "p");
@@ -800,7 +800,7 @@ public class QueueTest {
         Label label = LabelExpression.get("aws-linux-dummy");
         DummyCloudImpl dummyCloud = new DummyCloudImpl(r, 0);
         dummyCloud.label = label;
-        r.jenkins.clouds.add(dummyCloud);
+        r.jenkins.getClouds().add(dummyCloud);
         matrixProject.setAssignedLabel(label);
         r.assertBuildStatusSuccess(matrixProject.scheduleBuild2(0));
         assertEquals("aws-linux-dummy", matrixProject.getBuilds().getLastBuild().getBuiltOn().getLabelString());
@@ -819,7 +819,7 @@ public class QueueTest {
         dummyCloud.label = label;
         BlockDownstreamProjectExecution property = new BlockDownstreamProjectExecution();
         dummyCloud.getNodeProperties().add(property);
-        r.jenkins.clouds.add(dummyCloud);
+        r.jenkins.getClouds().add(dummyCloud);
         matrixProject.setAssignedLabel(label);
 
         FreeStyleProject upstreamProject = r.createFreeStyleProject("upstream");

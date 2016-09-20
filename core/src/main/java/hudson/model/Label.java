@@ -223,7 +223,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         if(clouds==null) {
             Set<Cloud> r = new HashSet<Cloud>();
             Jenkins h = Jenkins.getInstance();
-            for (Cloud c : h.clouds) {
+            for (Cloud c : h.getClouds()) {
                 if(c.canProvision(this))
                     r.add(c);
             }

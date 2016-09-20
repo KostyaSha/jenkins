@@ -674,7 +674,7 @@ public class NodeProvisioner {
                             });
 
                     CLOUD:
-                    for (Cloud c : Jenkins.getInstance().clouds) {
+                    for (Cloud c : Jenkins.getInstance().getClouds()) {
                         if (excessWorkload < 0) {
                             break;  // enough agents allocated
                         }

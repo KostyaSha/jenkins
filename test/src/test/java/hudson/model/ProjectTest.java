@@ -696,7 +696,7 @@ public class ProjectTest {
          */
         DummyCloudImpl2 c2 = new DummyCloudImpl2(j, 0);
         c2.label = new LabelAtom("test-cloud-label");        
-        j.jenkins.clouds.add(c2);
+        j.jenkins.getClouds().add(c2);
         
         SCMTrigger t = new SCMTrigger("@daily", true);
         t.start(proj, true);
@@ -714,7 +714,7 @@ public class ProjectTest {
      */
     @Test
     public void testUnrestrictedJobNoLabelByCloudNoQueue() throws Exception {
-        assertTrue(j.jenkins.clouds.isEmpty());
+        assertTrue(j.jenkins.getClouds().isEmpty());
         //Create slave. (Online)
         Slave s1 = j.createOnlineSlave();
         
@@ -769,7 +769,7 @@ public class ProjectTest {
          */
         DummyCloudImpl2 c2 = new DummyCloudImpl2(j, 0);
         c2.label = new LabelAtom("test-cloud-label");        
-        j.jenkins.clouds.add(c2);
+        j.jenkins.getClouds().add(c2);
         proj.setAssignedLabel(c2.label);
         
         SCMTrigger t = new SCMTrigger("@daily", true);
